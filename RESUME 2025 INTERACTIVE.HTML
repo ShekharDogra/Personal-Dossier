@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unified Interactive Career Report - Shekhar Dogra</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Cool Blue & Gray -->
+    <!-- Application Structure Plan: This SPA is designed as a narrative journey through Shekhar Dogra's career. It starts with a Hero section providing key professional statistics and an overview. This is followed by a visual Career Trajectory and Market Growth Trends, setting the stage for progression. Core Competencies (Soft and Technical Skills) are detailed next, with a Radar chart for soft skills. The application then dives into Market & Technology Insights, integrating market share and tech adoption data. The Project Showcase provides specific examples of strategic initiatives. A new "Detailed Experience" section provides granular insights into the primary role. The flow concludes with Education, Certifications, and Contact Information, and an "Additional Insights" section for personal context. This structure prioritizes a logical, easy-to-follow user experience, allowing for both high-level scanning and deep dives into specific areas, tailored for a professional review. -->
+    <!-- Visualization & Content Choices: Hero Stats (HTML/CSS): Inform - Large numbers for immediate impact. Career Trajectory (HTML/CSS Timeline) and Market Growth (Chart.js Line Chart): Change - Visualizes professional progression and market impact over time. Soft Skills (Chart.js Radar): Compare - Visually balances multiple interpersonal strengths. Technical Skills (HTML Lists): Organize - Provides balanced view of capabilities. Market Share (Chart.js Doughnut) and Tech Adoption (Chart.js Bar): Compare - Offers insights into market influence and expertise. Strategic Initiatives Flow (HTML/CSS Flow): Organize - Illustrates complex processes clearly. Project Showcase (HTML Grid): Explore - Provides a detailed list of key projects. Detailed Experience (HTML Lists): Inform - Provides extensive detail on key responsibilities. All charts use Canvas via Chart.js, and diagrams are HTML/CSS based, strictly adhering to no SVG or Mermaid.js. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F9FA; 
+        }
+        .stat-card {
+            background-color: #FFFFFF;
+            border-left: 4px solid #6B8EAD; 
+        }
+        .nav-link {
+            transition: color 0.3s ease;
+        }
+        .nav-link:hover {
+            color: #6B8EAD;
+        }
+        .chart-container {
+            position: relative;
+            margin: auto;
+            height: 40vh;
+            width: 80vw;
+            max-width: 600px; /* Max-width for consistency */
+            max-height: 450px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px; /* Adjust height for larger screens */
+            }
+        }
+         .timeline-item {
+            position: relative;
+            padding-bottom: 2rem;
+            padding-left: 2.5rem; 
+            border-left: 2px solid #E5E7EB;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -0.5rem;
+            top: 0.25rem;
+            height: 1rem;
+            width: 1rem;
+            background-color: #6B8EAD;
+            border-radius: 9999px;
+            border: 2px solid #FFFFFF;
+        }
+        .project-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .project-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 100;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            position: relative;
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6B8EAD;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .flow-arrow {
+            font-size: 1.5rem;
+            color: #6B8EAD;
+            margin: 0 0.5rem;
+            flex-shrink: 0; /* Prevent arrow from shrinking */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .flow-arrow::before {
+            content: '→';
+        }
+        .flow-item {
+            border: 2px solid #8FA2B7;
+            background-color: #ffffff;
+            flex-shrink: 0; /* Prevent item from shrinking */
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <header class="bg-white shadow-sm sticky top-0 z-50">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <img src="https://placehold.co/50x50/ADB5BD/FFFFFF?text=Your+Photo" alt="Shekhar Dogra's Photo" class="rounded-full w-12 h-12 border-2 border-[#6B8EAD]">
+                <div class="text-2xl font-bold text-gray-800">Shekhar Dogra</div>
+            </div>
+            <div class="hidden md:flex space-x-8">
+                <a href="#summary" class="nav-link text-gray-600">Summary</a>
+                <a href="#detailed-experience" class="nav-link text-gray-600">Experience</a>
+                <a href="#skills" class="nav-link text-gray-600">Skills</a>
+                <a href="#projects" class="nav-link text-gray-600">Projects</a>
+                <a href="#contact" class="nav-link text-gray-600">Contact</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="summary" class="text-center mb-20">
+            <h1 class="text-5xl font-bold mb-4">Senior IT Manager</h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-10">A result-oriented leader with over 12 years of proficiency in IT Project Management, Service Delivery, and Network & Endpoint Security, driven by a strong inclination towards data-driven objectives and positive change. Passionate about empowering teams to achieve excellence and stakeholder satisfaction.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <div class="stat-card p-6 rounded-lg shadow-md">
+                    <p class="text-4xl font-bold text-gray-900">12+ Years</p>
+                    <p class="text-gray-600">Managerial Experience</p>
+                </div>
+                <div class="stat-card p-6 rounded-lg shadow-md">
+                    <p class="text-4xl font-bold text-gray-900">5,000+</p>
+                    <p class="text-gray-600">Users Supported</p>
+                </div>
+                <div class="stat-card p-6 rounded-lg shadow-md">
+                    <p class="text-4xl font-bold text-gray-900">29</p>
+                    <p class="text-gray-600">Direct & Indirect Subordinates</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="detailed-experience" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Detailed Experience: Senior Manager IT</h2>
+            <p class="text-gray-600 text-center max-w-3xl mx-auto mb-8">A comprehensive look at key responsibilities and achievements during my tenure at Mahindra Finance, highlighting leadership, strategic impact, and operational excellence.</p>
+            <div class="bg-white rounded-lg shadow-lg p-6 md:p-8">
+                <h3 class="font-bold text-xl text-gray-800 mb-4">Mahindra Finance, Chandigarh (March 2016 - Present)</h3>
+                <ul class="list-disc list-inside text-gray-700 space-y-3">
+                    <li>**Leadership & IT Service Delivery:** Currently leading IT service delivery for Cloud, Infra, Network, and Security across all MMFSS group companies. Spearheaded the Business Information Technology Solution department for the North Zone (Delhi), ensuring seamless process management, technical support, and requirement fulfilment for rural and urban locations. Implemented cutting-edge virtualization and infrastructure technologies to enhance enterprise efficiency, performance, and business transformation.</li>
+                    <li>**IT Asset Management:** Successfully managing over 5,000 IT assets across Mahindra & Mahindra Financial Services Limited (MMFSL) and Mahindra Insurance Brokers Limited (MIBL), ensuring quality delivery of IT assets aligned with organizational standards.</li>
+                    <li>**Team Management:** Directly leading a team of 9 Area Heads as direct reportees, with 20 engineers working under their supervision. Overseeing the deliverables and performance of the entire team, ensuring alignment with organizational objectives. Collaborating with Regional Heads, Area Heads, Project Managers, and Service Managers to drive efficiency, achieve business goals, and maintain high service standards.</li>
+                    <li>**Cost Optimization:** Delivered cost-effective solutions without compromising service quality by optimizing procurement processes and resource management.</li>
+                    <li>**Change Management:** Directed change management initiatives in Delhi and Haryana for CRM implementation and the transition from legacy business applications to mobility applications (MAPPS).</li>
+                    <li>**Network & Endpoint Security:** Ensured robust network and endpoint security through tools like Switch Management, NAC, NAT, Firewalls, Antivirus Management, Patch Management, DLP, Proxy Management, and Network Infrastructure Management.</li>
+                    <li>**Transition Management:** Oversaw IT transitions for 103 branches across Delhi and Haryana, including the successful deployment of centralized IT helpdesk solutions. Pioneered the transition to the IT Service Management tool (Felicity) and LEENA AI for mobile-based IT support, enhancing service standards and efficiency.</li>
+                    <li>**Incident Management:** Managed incident response for over 5,000+ IT users, ensuring timely prioritization and resolution of issues through a centralized service desk.</li>
+                    <li>**Risk Mitigation:** Developed and implemented effective risk mitigation strategies to safeguard IT operations and processes.</li>
+                    <li>**Training & Stakeholder Engagement:** Conducted IT induction and training sessions for new employees, introducing them to IT's role in business operations. Maintained seamless coordination with stakeholders across Line of Business (LOB) and group-level entities.</li>
+                    <li>**Data Analysis & Reporting:** Analysed incident data to proactively identify trends and improve the quality of IT services. Supported periodic User Acceptance Testing (UAT) for end-user feedback and application improvement.</li>
+                    <li>**Microsoft 365 Expertise:** Provided support for various Microsoft 365 products, including Excel, Word, PowerPoint, Outlook, and Visio. Leveraged Excel and PowerPoint for data reporting and presentations to upper management.</li>
+                    <li>**Vendor Management:** Handled vendor selection, procurement, cost control, quality assurance, and asset capitalization. Ensured timely processing of payments and maintained effective vendor relationships.</li>
+                    <li>**Customer Satisfaction (CSAT) Surveys:** Initiated and managed CSAT surveys to gauge user satisfaction and identify improvement areas.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="trajectory" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Career Trajectory & Market Growth</h2>
+            <p class="text-gray-600 text-center max-w-3xl mx-auto mb-12">This section illustrates the progression of my career roles and the parallel growth in market influence and strategic responsibilities over time.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="max-w-xl mx-auto">
+                    <h3 class="font-semibold text-2xl mb-4 text-center">Professional Path</h3>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <p class="text-sm text-gray-500">March 2016 - Present</p>
+                        <h4 class="font-semibold text-xl">Senior Manager IT</h4>
+                        <p class="text-gray-600">Mahindra Finance</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <p class="text-sm text-gray-500">Dec 2014 - Feb 2016</p>
+                        <h4 class="font-semibold text-xl">Sr. FME IT Operations</h4>
+                        <p class="text-gray-600">Mahindra Finance (Net Business Solutions)</p>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-dot"></div>
+                        <p class="text-sm text-gray-500">Jul 2013 - Dec 2014</p>
+                        <h4 class="font-semibold text-xl">Sr. FME IT Operations</h4>
+                        <p class="text-gray-600">Mahindra Finance (Patni Computer Solutions)</p>
+                    </div>
+                    <div class="timeline-item" style="border-left: 2px solid transparent;">
+                        <div class="timeline-dot"></div>
+                        <p class="text-sm text-gray-500">Oct 2012 - Jul 2013</p>
+                        <h4 class="font-semibold text-xl">Faculty (Networking) Trainings</h4>
+                        <p class="text-gray-600">Jetking Infotrain Pvt Ltd</p>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold text-center mb-6">Market Growth Trajectory</h3>
+                    <p class="text-gray-600 text-center mb-6">Visualizing seniority level over time, reflecting consistent upward momentum in the IT management sector.</p>
+                    <div class="chart-container">
+                        <canvas id="marketGrowthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="skills" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Core Competencies</h2>
+            <p class="text-gray-600 text-center max-w-3xl mx-auto mb-12">An overview of both interpersonal and technical strengths that drive effective IT leadership and project success.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold text-center mb-6">Soft Skills Profile</h3>
+                    <p class="text-gray-600 text-center mb-6">A radar chart illustrating key interpersonal and strategic strengths, highlighting a well-rounded leadership approach.</p>
+                    <div class="chart-container">
+                        <canvas id="softSkillsChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-semibold mb-6 text-center">Technical Skills</h3>
+                     <p class="text-gray-600 text-center mb-6">A categorized overview of the technical expertise and platforms managed throughout my career.</p>
+                    <div class="space-y-6">
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-semibold">Programming/Web</h4>
+                            <p class="text-gray-600">Python, HTML, HTML5, CSS, Java</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-semibold">Cloud & Infrastructure</h4>
+                            <p class="text-gray-600">Cloud Migration, Virtualization, Windows Server, Linux (if applicable)</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-semibold">Network & Security</h4>
+                            <p class="text-gray-600">Firewalls, NAC, NAT, DLP, SD-WAN, Patch Management, Network Infrastructure Management, Ethical Hacking Concepts</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-semibold">IT Service & Enterprise Tools</h4>
+                            <p class="text-gray-600">Microsoft 365 Suite (Excel, Word, PowerPoint, Outlook, Visio), Felicity (ITSM), LEENA AI, CRM Systems, SAP</p>
+                        </div>
+                        <div class="bg-white p-4 rounded-lg shadow-sm">
+                            <h4 class="font-semibold">Hardware & Networking</h4>
+                            <p class="text-gray-600">IT Hardware Troubleshooting, Network Management</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="market-insights" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Market & Technology Insights</h2>
+            <p class="text-gray-600 text-center max-w-3xl mx-auto mb-12">Exploring key market dynamics, including influence within major organizations and the adoption rates of crucial technologies.</p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h3 class="text-2xl font-semibold text-center mb-6">Key Player Influence</h3>
+                    <p class="text-gray-600 text-center mb-6">Analysis showing significant market influence held by major organizations where strategic initiatives have been concentrated.</p>
+                     <div class="chart-container">
+                        <canvas id="marketShareChart"></canvas>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="2xl font-semibold text-center mb-6">Core Technology Adoption Rates</h3>
+                    <p class="text-gray-600 text-center mb-6">Demonstrating high adoption rates for critical technologies and frameworks forming the industry's foundation.</p>
+                    <div class="chart-container">
+                        <canvas id="techAdoptionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-12 bg-white rounded-lg shadow-lg p-8">
+                <h3 class="text-2xl font-bold text-center text-gray-800 mb-6">Strategic Market Initiatives Flow</h3>
+                <p class="text-center text-gray-600 mb-8">Key strategic projects have been pivotal in transforming the market's infrastructure and service capabilities. The flow below illustrates the progression of key strategic initiatives.</p>
+                <div class="flex flex-wrap items-center justify-center text-center">
+                    <div class="flow-item p-4 rounded-lg shadow-md m-2">
+                        <p class="font-bold text-gray-800">Exchange Server & O365 Migration</p>
+                        <p class="text-sm text-gray-600">Modernized communication & productivity</p>
+                    </div>
+                    <div class="flow-arrow hidden md:flex"></div>
+                    <div class="flow-item p-4 rounded-lg shadow-md m-2">
+                        <p class="font-bold text-gray-800">Finone Neo Migration</p>
+                        <p class="text-sm text-gray-600">Critical financial system update</p>
+                    </div>
+                    <div class="flow-arrow hidden md:flex"></div>
+                    <div class="flow-item p-4 rounded-lg shadow-md m-2">
+                        <p class="font-bold text-gray-800">Network Infrastructure Cloud-Based Migration</p>
+                        <p class="text-sm text-gray-600">Improved scalability for 114 offices</p>
+                    </div>
+                    <div class="flow-arrow hidden md:flex"></div>
+                    <div class="flow-item p-4 rounded-lg shadow-md m-2">
+                        <p class="font-bold text-gray-800">SD-WAN Implementation</p>
+                        <p class="text-sm text-gray-600">100% connectivity for 64 major offices</p>
+                    </div>
+                    <div class="flow-arrow hidden md:flex"></div>
+                    <div class="flow-item p-4 rounded-lg shadow-md m-2">
+                        <p class="font-bold text-gray-800">Firewall Implementation</p>
+                        <p class="text-sm text-gray-600">Secured open nodes in 114 offices</p>
+                    </div>
+                    <div class="flow-arrow hidden md:flex"></div>
+                    <div class="flow-item p-4 rounded-lg shadow-md m-2">
+                        <p class="font-bold text-gray-800">Project Udaan</p>
+                        <p class="text-sm text-gray-600">Comprehensive IT infrastructure migration</p>
+                    </div>
+                    <div class="flow-arrow hidden md:flex"></div>
+                    <div class="flow-item p-4 rounded-lg shadow-md m-2">
+                        <p class="font-bold text-gray-800">Project Cloud</p>
+                        <p class="text-sm text-gray-600">Server environment migration to cloud</p>
+                    </div>
+                    <div class="flow-arrow hidden md:flex"></div>
+                    <div class="flow-item p-4 rounded-lg shadow-md m-2">
+                        <p class="font-bold text-gray-800">Mobility Apps (MAPPS)</p>
+                        <p class="text-sm text-gray-600">Transition from legacy applications</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="projects" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-4">Project Showcase</h2>
+            <p class="text-gray-600 text-center max-w-3xl mx-auto mb-12">A portfolio of key strategic projects led, demonstrating a wide range of experience from infrastructure overhauls to security enhancements.</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="project-card bg-white p-6 rounded-lg shadow-md">
+                    <h4 class="font-bold text-xl mb-2">Exchange Server & O365 Migration</h4>
+                    <p class="text-gray-600 mb-4">Led the modernization of communication and productivity tools by migrating Exchange Server and implementing Office 365.</p>
+                </div>
+                <div class="project-card bg-white p-6 rounded-lg shadow-md">
+                    <h4 class="font-bold text-xl mb-2">Finone Neo Migration</h4>
+                    <p class="text-gray-600 mb-4">Oversaw the successful migration to Finone Neo, a critical financial system, ensuring business continuity and data integrity.</p>
+                </div>
+                <div class="project-card bg-white p-6 rounded-lg shadow-md">
+                    <h4 class="font-bold text-xl mb-2">Network Infrastructure Cloud-Based Migration</h4>
+                    <p class="text-gray-600 mb-4">Directed the migration of network infrastructure to cloud-based equipment for 114 offices, significantly improving scalability and centralized management.</p>
+                </div>
+                <div class="project-card bg-white p-6 rounded-lg shadow-md">
+                    <h4 class="font-bold text-xl mb-2">SD-WAN Implementation</h4>
+                    <p class="text-gray-600 mb-4">Spearheaded SD-WAN implementation for 64 major offices, ensuring 100% connectivity, enhanced network reliability, and optimized performance.</p>
+                </div>
+                <div class="project-card bg-white p-6 rounded-lg shadow-md">
+                    <h4 class="font-bold text-xl mb-2">Firewall Implementation</h4>
+                    <p class="text-gray-600 mb-4">Managed the implementation of firewalls in 114 offices to secure open nodes, fortify network security, and ensure compliance.</p>
+                </div>
+                 <div class="project-card bg-white p-6 rounded-lg shadow-md">
+                    <h4 class="font-bold text-xl mb-2">Project Udaan</h4>
+                    <p class="text-gray-600 mb-4">Oversaw the comprehensive migration of the entire IT infrastructure, ensuring minimal disruption and improved system performance.</p>
+                </div>
+                <div class="project-card bg-white p-6 rounded-lg shadow-md">
+                    <h4 class="font-bold text-xl mb-2">Project Cloud</h4>
+                    <p class="text-gray-600 mb-4">Led the comprehensive migration of all server environments to cloud platforms, enhancing performance, scalability, and reducing operational costs.</p>
+                </div>
+                <div class="project-card bg-white p-6 rounded-lg shadow-md">
+                    <h4 class="font-bold text-xl mb-2">Mobility Apps (MAPPS) Transition</h4>
+                    <p class="text-gray-600 mb-4">Directed the transition from legacy business applications to modern mobility applications (MAPPS), improving field force efficiency.</p>
+                </div>
+                <div class="project-card bg-white p-6 rounded-lg shadow-md">
+                    <h4 class="font-bold text-xl mb-2">IT Helpdesk & Asset Disposal Initiatives</h4>
+                    <p class="text-gray-600 mb-4">Established efficient IT Helpdesk operations and streamlined IT Asset Disposal processes, improving service delivery and resource management.</p>
+                </div>
+                 <div class="project-card bg-white p-6 rounded-lg shadow-md">
+                    <h4 class="font-bold text-xl mb-2">CRM Project Coordination</h4>
+                    <p class="text-gray-600 mb-4">Coordinated critical CRM projects, focusing on robust change management and seamless system upgrades for improved customer relations.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="education" class="mb-20">
+            <h2 class="text-3xl font-bold text-center mb-12">Education & Certifications</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-4xl mx-auto">
+                <div>
+                    <h3 class="text-2xl font-semibold mb-4">Academic Background</h3>
+                    <ul class="space-y-3 list-disc list-inside text-gray-700">
+                        <li>**MSC Computer Science** - Swami Vivekanand Subharti University (SVSU), 2017 - 2020</li>
+                        <li>**Master of Business Administration (MBA), Information Technology & SAP** - ISBM Ludhiana, 2014 - 2017</li>
+                        <li>**BSC Information Technology** - Shobhit University, 2010 - 2013</li>
+                        <li>**12th Standard** - G.S.S.School Matiana Shimla HP, Himachal Pradesh Board Of School Education, 2008-09</li>
+                        <li>**10th Standard** - G.S.S.School Narkanda Shimla HP, Himachal Pradesh Board Of School Education, 2006-07</li>
+                    </ul>
+                </div>
+                 <div>
+                    <h3 class="text-2xl font-semibold mb-4">Professional Certifications</h3>
+                    <ul class="space-y-3 list-disc list-inside text-gray-700">
+                        <li>Intermediate Ethical Hacker - zSecurity</li>
+                        <li>EQ Level 5 Diploma in Graphic Designing - Shaw Academy</li>
+                        <li>EQ Level 5 Diploma in Project Management (PMP) - Shaw Academy</li>
+                        <li>Cloud Computing Essentials - KCC Technologies Private Limited</li>
+                        <li>ITIL Foundation Level - ZOC Technologies</li>
+                        <li>PRINCE2® Foundation Certification Training - ZOC Technologies</li>
+                        <li>Hardware and Networking Professional - Jetking Infotrain Limited</li>
+                        <li>ADST (Advance Diploma In Software Technology) - Sri Sai Welfare Society</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+        
+        <section id="additional-insights" class="bg-white p-12 rounded-lg shadow-lg mb-20">
+            <h2 class="text-3xl font-bold text-center mb-8">Additional Insights</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-center">
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Strengths</h3>
+                    <p class="text-gray-700">Smart worker, Hardworking, Adaptable to change, Self-Motivated, Passionate at work, Data Analyzer, Team player.</p>
+                </div>
+                <div>
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">Weakness</h3>
+                    <p class="text-gray-700">I tend to be a perfectionist, which sometimes leads me to spend extra time ensuring everything is flawless. However, I am learning to balance accuracy with efficiency to meet deadlines effectively.</p>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <h3 class="text-2xl font-bold text-gray-800 mb-4">Personal Dossier</h3>
+                <p class="text-gray-700 mb-2"><span class="font-semibold">Father’s Name:</span> Sansar Chand</p>
+                <p class="text-gray-700 mb-2"><span class="font-semibold">Date of Birth:</span> 01-03-1990</p>
+                <p class="text-gray-700 mb-2"><span class="font-semibold">Gender:</span> Male</p>
+                <p class="text-gray-700 mb-2"><span class="font-semibold">Marital Status:</span> Married</p>
+                <p class="text-gray-700 mb-2"><span class="font-semibold">Hobbies:</span> Trekking, Travelling.</p>
+                <p class="text-gray-700"><span class="font-semibold">Permanent Address:</span> C/O Sh. Sansar Chand Near Post office, VPO Surani Distt Kangra, Himachal Pradesh - 176031</p>
+            </div>
+        </section>
+
+        <section id="contact" class="text-center bg-white p-12 rounded-lg shadow-lg">
+            <h2 class="text-3xl font-bold mb-4">Let's Connect</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto mb-8">I am always open to discussing new projects, creative ideas, or opportunities to be part of an ambitious vision. Feel free to get in touch.</p>
+            <div class="flex justify-center items-center space-x-6 flex-wrap">
+                <a href="mailto:Shekharmatlotia@gmail.com" class="text-lg font-medium text-gray-700 hover:text-[#6B8EAD] transition-colors mb-2 md:mb-0">Shekharmatlotia@gmail.com</a>
+                <span class="text-gray-300 hidden md:inline-block">|</span>
+                <a href="tel:+919103371010" class="text-lg font-medium text-gray-700 hover:text-[#6B8EAD] transition-colors mb-2 md:mb-0">+91-9103371010</a>
+                <span class="text-gray-300 hidden md:inline-block">|</span>
+                 <a href="https://www.linkedin.com/in/shekhar-dogra/" target="_blank" class="text-lg font-medium text-gray-700 hover:text-[#6B8EAD] transition-colors">LinkedIn Profile</a>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const wrapText = (str) => {
+            if (str.length <= 16) {
+                return str;
+            }
+            const words = str.split(' ');
+            const lines = [];
+            let currentLine = '';
+            for (const word of words) {
+                if ((currentLine + ' ' + word).length > 16 && currentLine.length > 0) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = currentLine ? currentLine + ' ' + word : word;
+                }
+            }
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+            return lines;
+        };
+
+        const chartTooltipOptions = {
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            const item = tooltipItems[0];
+                            let label = item.chart.data.labels[item.dataIndex];
+                            if (Array.isArray(label)) {
+                              return label.join(' ');
+                            } else {
+                              return label;
+                            }
+                        }
+                    }
+                }
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            // Chart Data and Colors (Cool Blue & Gray Palette)
+            const palette = {
+                primary: '#6B8EAD', // Dusty Blue/Slate Blue
+                secondary: '#8FA2B7', // Muted darker gray-blue
+                tertiary: '#C0D1DB', // Very light blue/gray
+                lightest: '#F8F9FA', // Main background
+                darkText: '#343A40', // Main text
+                grayText: '#495057' // Secondary text
+            };
+
+            // Market Growth Chart
+            const marketGrowthCtx = document.getElementById('marketGrowthChart').getContext('2d');
+            new Chart(marketGrowthCtx, {
+                type: 'line',
+                data: {
+                    labels: ['2011', '2012', '2013', '2014', '2016', 'Present'],
+                    datasets: [{
+                        label: 'Role Seniority Level',
+                        data: [1, 2, 3, 4, 5, 6],
+                        backgroundColor: `rgba(${parseInt(palette.primary.slice(1,3), 16)}, ${parseInt(palette.primary.slice(3,5), 16)}, ${parseInt(palette.primary.slice(5,7), 16)}, 0.2)`,
+                        borderColor: palette.primary,
+                        pointBackgroundColor: palette.primary,
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: palette.primary,
+                        tension: 0.3,
+                        fill: true,
+                    }]
+                },
+                options: { ...chartTooltipOptions,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    const levels = ['Faculty', 'Sr. FME', 'Sr. FME', 'Sr. FME (SAP)', 'Manager', 'Sr. Manager'];
+                                    return levels[value-1] || '';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        ...chartTooltipOptions.plugins,
+                        legend: { display: false }
+                    }
+                }
+            });
+            
+            // Soft Skills Chart
+            const softSkillsCtx = document.getElementById('softSkillsChart').getContext('2d');
+            new Chart(softSkillsCtx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        'Problem-Solving',
+                        'Adaptability',
+                        'Communication',
+                        'Strategic Thinking',
+                        'Mentorship',
+                        'Negotiation'
+                    ],
+                    datasets: [{
+                        label: 'Soft Skill Proficiency',
+                        data: [9, 9, 8, 8, 9, 7],
+                        backgroundColor: `rgba(${parseInt(palette.primary.slice(1,3), 16)}, ${parseInt(palette.primary.slice(3,5), 16)}, ${parseInt(palette.primary.slice(5,7), 16)}, 0.2)`,
+                        borderColor: palette.primary,
+                        pointBackgroundColor: palette.primary,
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: palette.primary
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 14,
+                                }
+                            },
+                            ticks: {
+                                backdropColor: 'transparent',
+                                stepSize: 2
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 10
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) {
+                                      return label.join(' ');
+                                    } else {
+                                      return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Market Share Chart
+            const marketShareCtx = document.getElementById('marketShareChart').getContext('2d');
+            new Chart(marketShareCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mahindra Finance', 'Jetking Infotrain', 'Net Business Solutions', 'Patni Computers', 'Gurukull Tech'],
+                    datasets: [{
+                        label: 'Years of Influence',
+                        data: [8.25, 1, 1.25, 1.5, 1], 
+                        backgroundColor: [palette.primary, palette.secondary, palette.tertiary, '#C0D1DB', '#DDE6ED'],
+                        borderColor: '#fff',
+                        borderWidth: 2,
+                    }]
+                },
+                options: { ...chartTooltipOptions,
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        ...chartTooltipOptions.plugins,
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Tech Adoption Chart
+            const techAdoptionCtx = document.getElementById('techAdoptionChart').getContext('2d');
+            new Chart(techAdoptionCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        wrapText('Project & Service Management (ITIL, PRINCE2)'),
+                        wrapText('Network & Endpoint Security'),
+                        wrapText('Cloud & Infrastructure Migration'),
+                        wrapText('Change & Incident Management'),
+                        wrapText('IT Asset Management'),
+                        wrapText('Vendor & Stakeholder Management'),
+                    ],
+                    datasets: [{
+                        label: 'Expertise Level',
+                        data: [95, 90, 85, 88, 92, 80],
+                        backgroundColor: [
+                            palette.primary,
+                            palette.secondary,
+                            palette.tertiary,
+                            '#C0D1DB',
+                            '#DDE6ED',
+                            palette.primary
+                        ],
+                        borderColor: [
+                            palette.primary,
+                            palette.secondary,
+                            palette.tertiary,
+                            '#C0D1DB',
+                            '#DDE6ED',
+                            palette.primary
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: { ...chartTooltipOptions,
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        ...chartTooltipOptions.plugins,
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
